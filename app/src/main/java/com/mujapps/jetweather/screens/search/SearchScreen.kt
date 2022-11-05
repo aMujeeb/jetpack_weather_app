@@ -24,11 +24,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mujapps.jetweather.navigation.WeatherScreens
 import com.mujapps.jetweather.screens.main.MainViewModel
 import com.mujapps.jetweather.widgets.WeatherAppBar
 
 @Composable
-fun SearchScreen(navController: NavController, mMainViewModel: MainViewModel) {
+fun SearchScreen(navController: NavController) {
     Scaffold(topBar = {
         WeatherAppBar(
             navController = navController,
@@ -45,7 +46,14 @@ fun SearchScreen(navController: NavController, mMainViewModel: MainViewModel) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "Search")
+                SearchBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) { mCity ->
+                    navController.navigate(WeatherScreens.MainScreen.name + "/$mCity")
+                }
             }
         }
     }
@@ -53,20 +61,26 @@ fun SearchScreen(navController: NavController, mMainViewModel: MainViewModel) {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SearchBar(onSearch: (String) -> Unit = {}) {
+fun SearchBar(modifier: Modifier, onSearch: (String) -> Unit = {}) {
     //Savebale states save or remember data and states in Forms. which pre entered data is wanted in other iterations of the form too
     val searchQueryState = rememberSaveable {
         mutableStateOf("")
     }
     val keyBoardController = LocalSoftwareKeyboardController.current
     val validEntered = remember(searchQueryState.value) {
-        searchQueryState.value.toString().isNotEmpty()
+        searchQueryState.value.trim().isNotEmpty()
     }
+
     Column() {
         CommonTextField(
             valueState = searchQueryState,
-            placeHolder = "Seattle",
-            onAction = KeyboardActions { }
+            placeHolder = "City",
+            onAction = KeyboardActions {
+                if (!validEntered) return@KeyboardActions
+                onSearch(searchQueryState.value.trim())
+                searchQueryState.value = ""
+                keyBoardController?.hide()
+            }
         )
     }
 }
@@ -76,7 +90,7 @@ fun CommonTextField(
     valueState: MutableState<String>,
     placeHolder: String,
     keyBoardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Next,
+    imeAction: ImeAction = ImeAction.Done,
     onAction: KeyboardActions = KeyboardActions.Default
 ) {
     OutlinedTextField(

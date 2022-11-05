@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -17,11 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -29,18 +25,21 @@ import coil.compose.AsyncImage
 import com.mujapps.jetweather.R
 import com.mujapps.jetweather.data.DataOrException
 import com.mujapps.jetweather.model.CityWeather
-import com.mujapps.jetweather.model.WeatherData
 import com.mujapps.jetweather.navigation.WeatherScreens
 import com.mujapps.jetweather.widgets.WeatherAppBar
 import com.mujapps.jetweather.widgets.WeatherDetailsRow
 
 @Composable
-fun MainScreen(navController: NavController, mMainViewModel: MainViewModel = hiltViewModel()) {
+fun MainScreen(
+    navController: NavController,
+    mMainViewModel: MainViewModel = hiltViewModel(),
+    cityName: String?
+) {
 
     val weatherData = produceState<DataOrException<CityWeather, Boolean, Exception>>(
         initialValue = DataOrException(loading = true)
     ) {
-        value = mMainViewModel.getWeatherData("moscow")
+        value = mMainViewModel.getWeatherData(cityName ?: "")
     }.value
     if (weatherData.loading == true) {
         CircularProgressIndicator()
