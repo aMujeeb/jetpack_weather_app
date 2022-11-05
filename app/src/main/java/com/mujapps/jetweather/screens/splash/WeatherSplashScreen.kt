@@ -1,4 +1,4 @@
-package com.mujapps.jetweather.screens
+package com.mujapps.jetweather.screens.splash
 
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.core.Animatable

@@ -11,13 +11,14 @@ import com.mujapps.jetweather.utils.LoggerUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val mWeatherRepo: WeatherRepository) : ViewModel() {
 
-    val mSimpleDateFormatter = SimpleDateFormat("EEE, MMM dd")
+    private val mSimpleDateFormatter = SimpleDateFormat("EEE, MMM dd", Locale.getDefault())
+    private val mSimpleTimeFormatter = SimpleDateFormat("hh:mm:aa", Locale.getDefault())
     /* val data: MutableState<DataOrException<CityWeather, Boolean, Exception>> =
         mutableStateOf(DataOrException(null, true, Exception("")))
 
@@ -48,6 +49,12 @@ class MainViewModel @Inject constructor(private val mWeatherRepo: WeatherReposit
         val calendar = Calendar.getInstance()
         calendar.time.time = millis
         return mSimpleDateFormatter.format(calendar.time)
+    }
+
+    fun getFormattedTime(millis: Long): String {
+        val calendar = Calendar.getInstance()
+        calendar.time.time = millis * 1000
+        return mSimpleTimeFormatter.format(calendar.time)
     }
 
     fun getFormattedTemp(value: Double) = String.format("%.0f", value)

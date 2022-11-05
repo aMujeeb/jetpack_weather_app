@@ -2,7 +2,11 @@ package com.mujapps.jetweather.screens.main
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,8 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -23,7 +30,9 @@ import com.mujapps.jetweather.R
 import com.mujapps.jetweather.data.DataOrException
 import com.mujapps.jetweather.model.CityWeather
 import com.mujapps.jetweather.model.WeatherData
+import com.mujapps.jetweather.navigation.WeatherScreens
 import com.mujapps.jetweather.widgets.WeatherAppBar
+import com.mujapps.jetweather.widgets.WeatherDetailsRow
 
 @Composable
 fun MainScreen(navController: NavController, mMainViewModel: MainViewModel = hiltViewModel()) {
@@ -52,6 +61,9 @@ fun ShowWeatherMainScaffold(
             title = data.name + "-" + data.sys.country,
             icon = Icons.Default.ArrowBack,
             navController = navController,
+            onAddActionClicked = {
+                navController.navigate(WeatherScreens.SearchScreen.name)
+            },
             elevation = 4.dp
         ) {
             //Lambda for back arrow click this can be used because final parameter of weather ap bar is an Lambda
@@ -111,7 +123,26 @@ fun MainContent(data: CityWeather, mMainViewModel: MainViewModel) {
         }
         HumidityPressureRow(data)
         Divider()
+        SunRiseSunSetRow(data, mMainViewModel)
+        Text(
+            text = "This Week",
+            style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.Bold
+        )
 
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            color = Color.White,
+            shape = RoundedCornerShape(size = 12.dp)
+        ) {
+            LazyColumn(modifier = Modifier.padding(4.dp), contentPadding = PaddingValues(1.dp)) {
+                items(items = data.weather) { item ->
+                    WeatherDetailsRow(item, data.dt, mMainViewModel)
+                }
+            }
+        }
     }
 }
 
@@ -157,6 +188,42 @@ fun HumidityPressureRow(data: CityWeather) {
                 modifier = Modifier.size(20.dp)
             )
             Text(text = "${data.wind.speed} Kmph", style = MaterialTheme.typography.caption)
+        }
+    }
+}
+
+@Composable
+private fun SunRiseSunSetRow(data: CityWeather, mMainViewModel: MainViewModel) {
+    Row(
+        modifier = Modifier
+            .padding(4.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_sunrise),
+                contentDescription = "Sunrise",
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = mMainViewModel.getFormattedTime(data.sys.sunrise),
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(start = 2.dp, top = 2.dp)
+            )
+        }
+        Row(modifier = Modifier.padding(4.dp)) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_sunset),
+                contentDescription = "Sunset",
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = mMainViewModel.getFormattedTime(data.sys.sunset),
+                style = MaterialTheme.typography.caption,
+                modifier = Modifier.padding(start = 2.dp, top = 2.dp)
+            )
         }
     }
 }
