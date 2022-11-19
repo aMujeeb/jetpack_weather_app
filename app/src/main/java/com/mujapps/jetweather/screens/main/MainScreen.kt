@@ -9,8 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +25,7 @@ import com.mujapps.jetweather.R
 import com.mujapps.jetweather.data.DataOrException
 import com.mujapps.jetweather.model.CityWeather
 import com.mujapps.jetweather.navigation.WeatherScreens
+import com.mujapps.jetweather.screens.settings.SettingsViewModel
 import com.mujapps.jetweather.widgets.WeatherAppBar
 import com.mujapps.jetweather.widgets.WeatherDetailsRow
 
@@ -33,18 +33,34 @@ import com.mujapps.jetweather.widgets.WeatherDetailsRow
 fun MainScreen(
     navController: NavController,
     mMainViewModel: MainViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     cityName: String?
 ) {
+
+    val currentCity: String = if (cityName.isNullOrEmpty()) "Colombo" else cityName
+    val unitFromDb = settingsViewModel.mUnitsList.collectAsState().value
+    var unitMeasurement by remember {
+        mutableStateOf("imperial")
+    }
+
+    var isImperial by remember {
+        mutableStateOf(false)
+    }
+
+    if (unitFromDb.isNotEmpty()) {
+        unitMeasurement = unitFromDb[0].unit.split(" ")[0].lowercase()
+        isImperial = unitMeasurement == "imperial"
+    }
 
     val weatherData = produceState<DataOrException<CityWeather, Boolean, Exception>>(
         initialValue = DataOrException(loading = true)
     ) {
-        value = mMainViewModel.getWeatherData(cityName ?: "")
+        value = mMainViewModel.getWeatherData(currentCity, unit = unitMeasurement)
     }.value
     if (weatherData.loading == true) {
         CircularProgressIndicator()
     } else if (weatherData.data != null) {
-        ShowWeatherMainScaffold(weatherData.data!!, navController, mMainViewModel)
+        ShowWeatherMainScaffold(weatherData.data!!, navController, mMainViewModel, isImperial)
     }
 }
 
@@ -53,7 +69,8 @@ fun MainScreen(
 fun ShowWeatherMainScaffold(
     data: CityWeather,
     navController: NavController,
-    mMainViewModel: MainViewModel
+    mMainViewModel: MainViewModel,
+    mIsImperial: Boolean
 ) {
     Scaffold(topBar = {
         WeatherAppBar(
@@ -70,13 +87,13 @@ fun ShowWeatherMainScaffold(
     }) {
         MainContent(
             data,
-            mMainViewModel
+            mMainViewModel, mIsImperial
         ) //it gives an error. from 1.2.0 it is need to passed to top composable
     }
 }
 
 @Composable
-fun MainContent(data: CityWeather, mMainViewModel: MainViewModel) {
+fun MainContent(data: CityWeather, mMainViewModel: MainViewModel, mIsImperial: Boolean) {
     val imageUrl = "https://openweathermap.org/img/wn/${data.weather[0].icon}.png"
     Column(
         Modifier
@@ -120,7 +137,7 @@ fun MainContent(data: CityWeather, mMainViewModel: MainViewModel) {
                 )
             }
         }
-        HumidityPressureRow(data)
+        HumidityPressureRow(data, mIsImperial)
         Divider()
         SunRiseSunSetRow(data, mMainViewModel)
         Text(
@@ -156,7 +173,7 @@ fun WeatherStateImage(imageUrl: String) {
 }
 
 @Composable
-fun HumidityPressureRow(data: CityWeather) {
+fun HumidityPressureRow(data: CityWeather, mIsImperial: Boolean) {
     Row(
         modifier = Modifier
             .padding(8.dp)
@@ -186,7 +203,10 @@ fun HumidityPressureRow(data: CityWeather) {
                 contentDescription = "wind",
                 modifier = Modifier.size(20.dp)
             )
-            Text(text = "${data.wind.speed} Kmph", style = MaterialTheme.typography.caption)
+            Text(
+                text = "${data.wind.speed}" + if (mIsImperial) "mph" else "m/s",
+                style = MaterialTheme.typography.caption
+            )
         }
     }
 }

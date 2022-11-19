@@ -41,8 +41,11 @@ class MainViewModel @Inject constructor(private val mWeatherRepo: WeatherReposit
     }
     */
 
-    suspend fun getWeatherData(city: String): DataOrException<CityWeather, Boolean, Exception> {
-        return mWeatherRepo.getCityBaseWeather(city)
+    suspend fun getWeatherData(
+        city: String,
+        unit: String
+    ): DataOrException<CityWeather, Boolean, Exception> {
+        return mWeatherRepo.getCityBaseWeather(city, unit)
     }
 
     fun getFormattedDate(millis: Long): String {

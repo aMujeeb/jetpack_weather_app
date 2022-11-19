@@ -2,6 +2,7 @@ package com.mujapps.jetweather.di
 
 import android.content.Context
 import androidx.room.Room
+import com.mujapps.jetweather.data.MeasurementUnitDao
 import com.mujapps.jetweather.data.WeatherDao
 import com.mujapps.jetweather.data.WeatherDataBase
 import com.mujapps.jetweather.network.WeatherApi
@@ -45,6 +46,11 @@ class AppModule {
     @Singleton
     @Provides
     fun provideWeatherDao(weatherDb: WeatherDataBase): WeatherDao = weatherDb.weatherDao()
+
+    @Singleton
+    @Provides
+    fun provideMeasurementUnitDao(weatherDb: WeatherDataBase): MeasurementUnitDao =
+        weatherDb.measurementUnitsDao()
 
     @Singleton
     @Provides

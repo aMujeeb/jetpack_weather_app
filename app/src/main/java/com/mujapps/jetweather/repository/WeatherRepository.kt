@@ -7,9 +7,9 @@ import com.mujapps.jetweather.utils.LoggerUtil
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(private val mApi: WeatherApi) {
-    suspend fun getCityBaseWeather(cityName: String): DataOrException<CityWeather, Boolean, Exception> {
+    suspend fun getCityBaseWeather(cityName: String, unit : String): DataOrException<CityWeather, Boolean, Exception> {
         val response = try {
-            mApi.getWeatherCityBaseData(cityName)
+            mApi.getWeatherCityBaseData(cityName, units = unit)
         } catch (e: Exception) {
             return DataOrException(e = e)
         }

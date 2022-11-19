@@ -36,7 +36,11 @@ fun WeatherNavigation() {
         ) { navBack ->
             navBack.arguments?.getString("city").let { cityName ->
                 val mMainViewModel = hiltViewModel<MainViewModel>()
-                MainScreen(navController = navController, mMainViewModel, cityName)
+                MainScreen(
+                    navController = navController,
+                    mMainViewModel = mMainViewModel,
+                    cityName = cityName
+                )
             }
         }
 
